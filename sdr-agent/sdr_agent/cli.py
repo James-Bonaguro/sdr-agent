@@ -9,7 +9,7 @@ import googlemaps
 from .analyzer import analyze_businesses
 from .csv_export import export_to_csv
 from .search import enrich_results, search_businesses
-from .sheets import export_to_sheet
+# from .sheets import export_to_sheet
 
 
 def main():
@@ -63,6 +63,11 @@ def main():
         help="Separate API key for Sheets (defaults to --google-api-key if not set)",
     )
     parser.add_argument(
+        "--niche",
+        default=None,
+        help="Business niche label (e.g. 'med spa', 'dental'). Auto-inferred from query if not set.",
+    )
+    parser.add_argument(
         "--no-enrich",
         action="store_true",
         help="Skip fetching detailed info (phone, website) for each result",
@@ -98,6 +103,11 @@ def main():
         print("No results found. Try broadening your search.")
         sys.exit(0)
 
+    # Assign niche to each result
+    niche = args.niche or _infer_niche(args.query)
+    for r in results:
+        r["niche"] = niche
+
     # Enrich with details (phone, website)
     if not args.no_enrich:
         print("Fetching detailed info for each business...")
@@ -110,20 +120,42 @@ def main():
         _print_analysis_summary(results)
 
     # Export results
-    if args.sheet_id:
-        sheets_key = args.sheets_api_key or args.google_api_key
-        print("Exporting to Google Sheets...")
-        url = export_to_sheet(
-            api_key=sheets_key,
-            spreadsheet_id=args.sheet_id,
-            results=results,
-            worksheet_name=args.worksheet,
-        )
-        print(f"Done! {len(results)} businesses exported to: {url}")
-    else:
-        print(f"Saving results to {args.output}...")
-        path = export_to_csv(results, args.output)
-        print(f"Done! {len(results)} businesses saved to: {path}")
+    # if args.sheet_id:
+    #     sheets_key = args.sheets_api_key or args.google_api_key
+    #     print("Exporting to Google Sheets...")
+    #     url = export_to_sheet(
+    #         api_key=sheets_key,
+    #         spreadsheet_id=args.sheet_id,
+    #         results=results,
+    #         worksheet_name=args.worksheet,
+    #     )
+    #     print(f"Done! {len(results)} businesses exported to: {url}")
+    # else:
+    print(f"Saving results to {args.output}...")
+    path = export_to_csv(results, args.output)
+    print(f"Done! {len(results)} businesses saved to: {path}")
+
+
+def _infer_niche(query: str) -> str:
+    """Best-effort niche label from the search query."""
+    q = query.lower()
+    for keyword, label in [
+        ("med spa", "med spa"),
+        ("medspa", "med spa"),
+        ("dental", "dental"),
+        ("dentist", "dental"),
+        ("chiro", "chiropractic"),
+        ("dermatolog", "dermatology"),
+        ("plastic surg", "plastic surgery"),
+        ("cosmetic", "cosmetic"),
+        ("veterinar", "veterinary"),
+        ("optometr", "optometry"),
+        ("orthodont", "orthodontics"),
+    ]:
+        if keyword in q:
+            return label
+    # Fall back to the raw query
+    return query.strip()
 
 
 def _print_analysis_summary(results: list[dict]) -> None:
@@ -134,10 +166,10 @@ def _print_analysis_summary(results: list[dict]) -> None:
 
     scored = [r for r in results if r.get("website_score", 0) > 0]
     avg_score = sum(r["website_score"] for r in scored) / len(scored) if scored else 0
-    high_quality = sum(1 for r in scored if r["website_score"] >= 60)
+    low_score = sum(1 for r in scored if r["website_score"] < 50)
 
-    print(f"\n  Ownership: {independent} Independent | {group} Group/DSO | {unknown} Unknown")
-    print(f"  Quality:   {high_quality} high-scoring leads (avg score: {avg_score:.0f}/100)\n")
+    print(f"\n  Ownership:  {independent} Independent | {group} Group/DSO | {unknown} Unknown")
+    print(f"  Websites:   avg score {avg_score:.0f}/100 | {low_score} low-scoring leads (prime targets)\n")
 
 
 if __name__ == "__main__":

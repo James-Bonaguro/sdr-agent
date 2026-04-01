@@ -97,17 +97,29 @@ def enrich_results(
     return enriched
 
 
+def _extract_city(address: str) -> str:
+    """Parse city from a formatted address like '123 Main St, Orland Park, IL 60462, USA'."""
+    parts = [p.strip() for p in address.split(",")]
+    # Typical Google format: street, city, state+zip, country
+    if len(parts) >= 3:
+        return parts[-3]
+    if len(parts) == 2:
+        return parts[0]
+    return ""
+
+
 def _extract_fields(place: dict) -> dict:
     """Extract relevant fields from a Places API result."""
+    address = place.get("formatted_address", "")
     return {
-        "name": place.get("name", ""),
-        "address": place.get("formatted_address", ""),
-        "rating": place.get("rating", ""),
-        "total_ratings": place.get("user_ratings_total", ""),
-        "business_status": place.get("business_status", ""),
-        "types": ", ".join(place.get("types", [])),
+        "business_name": place.get("name", ""),
+        "address": address,
+        "city": _extract_city(address),
+        "google_rating": place.get("rating", ""),
+        "review_count": place.get("user_ratings_total", ""),
         "place_id": place.get("place_id", ""),
         "phone": "",
         "website": "",
         "google_maps_url": "",
+        "niche": "",
     }

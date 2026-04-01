@@ -4,19 +4,18 @@ import csv
 import os
 
 HEADERS = [
-    "Name",
-    "Address",
-    "Phone",
+    "Business Name",
+    "City",
     "Website",
-    "Rating",
-    "Total Ratings",
-    "Business Status",
-    "Types",
-    "Google Maps URL",
+    "Google Rating",
+    "Review Count",
     "Website Score",
-    "Score Reasons",
+    "Website Issues",
+    "Missed Revenue Signal",
     "Ownership Type",
-    "Ownership Signals",
+    "Niche",
+    "Phone",
+    "Address",
 ]
 
 
@@ -43,17 +42,16 @@ def export_to_csv(results: list[dict], output_path: str) -> str:
 def _result_to_row(result: dict) -> list[str]:
     """Convert a result dict to a row of cell values."""
     return [
-        str(result.get("name", "")),
-        str(result.get("address", "")),
-        str(result.get("phone", "")),
+        str(result.get("business_name", "")),
+        str(result.get("city", "")),
         str(result.get("website", "")),
-        str(result.get("rating", "")),
-        str(result.get("total_ratings", "")),
-        str(result.get("business_status", "")),
-        str(result.get("types", "")),
-        str(result.get("google_maps_url", "")),
+        str(result.get("google_rating", "")),
+        str(result.get("review_count", "")),
         str(result.get("website_score", "")),
-        str(result.get("score_reasons", "")),
+        str(result.get("website_issues", "")),
+        str(result.get("missed_revenue_signal", "")),
         str(result.get("ownership_type", "")),
-        str(result.get("ownership_signals", "")),
+        str(result.get("niche", "")),
+        str(result.get("phone", "")),
+        str(result.get("address", "")),
     ]
