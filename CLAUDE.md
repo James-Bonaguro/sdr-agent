@@ -1,8 +1,8 @@
-# Intersection Strategies
+# InterStrat
 
 ## Project Overview
 
-Intersection Strategies is a consulting firm focused on business automation. The main tool is the **SDR Agent** — a Python CLI that finds businesses via Google Maps, scores their websites, classifies ownership, and exports qualified leads to CSV or Google Sheets.
+Intersection Strategies is focused on business automation. This custom tool is the **SDR Agent** — a Python CLI that finds businesses via Google Maps, scores their websites, classifies ownership, and exports qualified leads to CSV or Google Sheets.
 
 ## Project Structure
 
